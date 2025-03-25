@@ -1,3 +1,6 @@
+// Package mockx provides a lightweight mocking utility for Go interfaces.
+// It allows you to create mock implementations, register method behaviors and
+// retrieve method arguments.
 package mockx
 
 import (
@@ -6,11 +9,19 @@ import (
 	"slices"
 )
 
+// Mockx is the main struct that manages mock method implementations and args
+// tracking.
 type Mockx struct {
 	methods map[string]reflect.Value
 	args    map[string][]any
 }
 
+// Init populates the mock instance with zero-value implementations for all
+// methods of the given interface.
+//
+// It's not necessary to call Init into a Mockx instance, but if you don't, you
+// need to manually call Impl or Return for all used methods, otherwise, your
+// program will panic.
 func (mockxInstance *Mockx) Init(nilInterface any) {
 	interfaceType := reflect.TypeOf(nilInterface).Elem()
 
@@ -33,6 +44,8 @@ func (mockxInstance *Mockx) Init(nilInterface any) {
 	}
 }
 
+// Call invokes a registered mock method with the given arguments. Panics if the
+// method is not registered.
 func (mockxInstance *Mockx) Call(method string, args ...any) []any {
 	funcValue, ok := mockxInstance.methods[method]
 	if !ok {
@@ -59,6 +72,8 @@ func (mockxInstance *Mockx) Call(method string, args ...any) []any {
 	return returnValues
 }
 
+// Impl manually registers a function as an implementation for a method. The
+// provided function must match the signature of the method.
 func (mockxInstance *Mockx) Impl(method string, fn any) {
 	if mockxInstance.methods == nil {
 		mockxInstance.methods = make(map[string]reflect.Value)
@@ -66,6 +81,7 @@ func (mockxInstance *Mockx) Impl(method string, fn any) {
 	mockxInstance.methods[method] = reflect.ValueOf(fn)
 }
 
+// Return registers a mock method to return the given values.
 func (mockxInstance *Mockx) Return(method string, values ...any) {
 	if mockxInstance.methods == nil {
 		mockxInstance.methods = make(map[string]reflect.Value)
@@ -89,6 +105,8 @@ func (mockxInstance *Mockx) Return(method string, values ...any) {
 	mockxInstance.methods[method] = funcValue
 }
 
+// Args retrieves the arguments used in the most recent call to the specified
+// method. Panics if the method was never called.
 func (mockInstance *Mockx) Args(method string) []any {
 	if mockInstance.args == nil {
 		panic(fmt.Sprintf("Cannot get args for method %q, method was not called.", method))

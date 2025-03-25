@@ -1,6 +1,7 @@
 package mockx_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/AndreyArthur/mockx"
@@ -69,4 +70,68 @@ func TestMockxArgs(t *testing.T) {
 	if args[0].(int) != 1 || args[1].(int) != 2 {
 		t.Fatal("Expected arguments to be saved.")
 	}
+}
+
+func ExampleMockx_Init() {
+	greeter := &GreeterMock{}
+	greeter.Init((*Greeter)(nil))
+
+	result := greeter.Greet("Mockx")
+
+	fmt.Printf("result = %q\n", result)
+	// Output:
+	// result = ""
+}
+
+func ExampleMockx_Call() {
+	greeter := &GreeterMock{}
+	greeter.Init((*Greeter)(nil))
+
+	values := greeter.Call("Greet", "Mockx")
+	result := values[0].(string)
+
+	fmt.Printf("result = %q\n", result)
+	// Output:
+	// result = ""
+}
+
+func ExampleMockx_Impl() {
+	greeter := &GreeterMock{}
+	greeter.Init((*Greeter)(nil))
+
+	greeter.Impl("Greet", func(name string) string {
+		return "Welcome, " + name + "."
+	})
+
+	result := greeter.Greet("Mockx")
+
+	fmt.Printf("result = %q\n", result)
+	// Output:
+	// result = "Welcome, Mockx."
+}
+
+func ExampleMockx_Return() {
+	greeter := &GreeterMock{}
+	greeter.Init((*Greeter)(nil))
+
+	greeter.Return("Greet", "Hello, Golang!")
+
+	result := greeter.Greet("Mockx")
+
+	fmt.Printf("result = %q\n", result)
+	// Output:
+	// result = "Hello, Golang!"
+}
+
+func ExampleMockx_Args() {
+	greeter := &GreeterMock{}
+	greeter.Init((*Greeter)(nil))
+
+	greeter.Greet("Mockx")
+	args := greeter.Args("Greet")
+	arg := args[0].(string)
+
+	fmt.Printf("arg = %q\n", arg)
+	// Output:
+	// arg = "Mockx"
 }
