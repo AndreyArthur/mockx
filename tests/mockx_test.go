@@ -58,3 +58,15 @@ func TestMockxReturn(t *testing.T) {
 		t.Fatal("Expected default value to be sixty four.")
 	}
 }
+
+func TestMockxArgs(t *testing.T) {
+	calculator := &CalculatorMock{}
+	calculator.Init((*Calculator)(nil))
+
+	calculator.Add(1, 2)
+	args := calculator.Args("Add")
+
+	if args[0].(int) != 1 || args[1].(int) != 2 {
+		t.Fatal("Expected arguments to be saved.")
+	}
+}

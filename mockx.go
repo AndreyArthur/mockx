@@ -3,10 +3,12 @@ package mockx
 import (
 	"fmt"
 	"reflect"
+	"slices"
 )
 
 type Mockx struct {
 	methods map[string]reflect.Value
+	args    map[string][]any
 }
 
 func (mockxInstance *Mockx) Init(nilInterface any) {
@@ -31,18 +33,23 @@ func (mockxInstance *Mockx) Init(nilInterface any) {
 	}
 }
 
-func (mockxInstance *Mockx) Call(method string, values ...any) []any {
+func (mockxInstance *Mockx) Call(method string, args ...any) []any {
 	funcValue, ok := mockxInstance.methods[method]
 	if !ok {
 		panic(fmt.Sprintf("Could not call method %q, not registered in mockx instance.", method))
 	}
 
-	args := make([]reflect.Value, len(values))
-	for i, value := range values {
-		args[i] = reflect.ValueOf(value)
+	if mockxInstance.args == nil {
+		mockxInstance.args = make(map[string][]any)
+	}
+	mockxInstance.args[method] = slices.Clone(args)
+
+	reflectionArgs := make([]reflect.Value, len(args))
+	for i, value := range args {
+		reflectionArgs[i] = reflect.ValueOf(value)
 	}
 
-	reflectionReturnValues := funcValue.Call(args)
+	reflectionReturnValues := funcValue.Call(reflectionArgs)
 
 	returnValues := make([]any, len(reflectionReturnValues))
 	for i, value := range reflectionReturnValues {
@@ -80,4 +87,17 @@ func (mockxInstance *Mockx) Return(method string, values ...any) {
 	})
 
 	mockxInstance.methods[method] = funcValue
+}
+
+func (mockInstance *Mockx) Args(method string) []any {
+	if mockInstance.args == nil {
+		panic(fmt.Sprintf("Cannot get args for method %q, method was not called.", method))
+	}
+
+	args, ok := mockInstance.args[method]
+	if !ok {
+		panic(fmt.Sprintf("Cannot get args for method %q, method was not called.", method))
+	}
+
+	return args
 }
