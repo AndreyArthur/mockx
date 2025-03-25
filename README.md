@@ -2,12 +2,23 @@
 
 Mockx is a lightweight and intuitive mocking library for Go interfaces. It simplifies testing by allowing you to create mock implementations, define method behaviors, and capture method arguments with minimal boilerplate.
 
+- [Motivation](#motivation)
 - [Installation](#installation)
 - [Docs](https://pkg.go.dev/github.com/AndreyArthur/mockx)
 - [Features](#features)
 - [Usage](#usage)
 - [Examples](#examples)
 - [License](#license)
+
+## Motivation
+
+This section reflects only the author's opinion. Whether you agree or disagree, you are encouraged to continue using the library as you see fit.
+
+- Dissatisfaction with the excessive boilerplate required to create mocks with other libraries, which practically forces the use of code generation.
+- Code generation feels like a hack rather than a proper solution in any sense.
+- Lack of clarity and directness when defining mock behaviors, especially due to the use of expects.
+- Using expects in mocks is conceptually wrong. If you find expects useful in your mocks, you are probably not writing unit tests. Additionally, integration tests should not use mocks.
+- Using a bunch of "anything" as expects feels even worse.
 
 ## Installation
 
