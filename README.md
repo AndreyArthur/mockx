@@ -2,6 +2,13 @@
 
 Mockx is a lightweight and intuitive mocking library for Go interfaces. It simplifies testing by allowing you to create mock implementations, define method behaviors, and capture method arguments with minimal boilerplate.
 
+- [Installation](#installation)
+- [Docs](https://pkg.go.dev/github.com/AndreyArthur/mockx)
+- [Features](#features)
+- [Usage](#usage)
+- [Examples](#examples)
+- [License](#license)
+
 ## Installation
 
 ```bash
