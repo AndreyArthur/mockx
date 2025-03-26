@@ -55,7 +55,7 @@ type CalculatorMock struct {
 
 func (m *CalculatorMock) Add(a int, b int) int {
     values := m.Call("Add", a, b)
-    return values[0].(int)
+    return mockx.Value[int](values[0])
 }
 ```
 
@@ -126,50 +126,6 @@ result := calculator.Add(5, 5) // Returns 100, ignores inputs
 ```go
 calculator.Add(10, 20)
 args := calculator.Args("Add") // [10, 20]
-```
-
-## Advanced Example
-
-Test a `Searcher` that uses a `Sorting` interface dependency:
-
-```go
-// Define the interface
-type Sorting interface {
-    IsSorted(slice []int) bool
-}
-
-// Create a mock
-type SortingMock struct {
-    mockx.Mockx
-}
-
-func (m *SortingMock) IsSorted(slice []int) bool {
-    values := m.Call("IsSorted", slice)
-    return values[0].(bool)
-}
-
-// Usage in tests
-func TestSearcher(t *testing.T) {
-    sorting := &SortingMock{}
-    sorting.Init((*Sorting)(nil))
-    searcher := NewSearcher(sorting)
-
-    // Force IsSorted to return false (use linear search)
-    sorting.Return("IsSorted", false)
-    index := searcher.Search([]int{3,1,2}, 3) // Returns 0
-
-    // Override IsSorted with custom logic
-    sorting.Impl("IsSorted", func(slice []int) bool {
-        // Check if sorted
-        for i := 0; i < len(slice)-1; i++ {
-            if slice[i] > slice[i+1] {
-                return false
-            }
-        }
-        return true
-    })
-    index = searcher.Search([]int{1,2,3,4}, 4) // Returns 3 (binary search)
-}
 ```
 
 ## License
