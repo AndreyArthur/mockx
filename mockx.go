@@ -9,6 +9,43 @@ import (
 	"slices"
 )
 
+// Reference is a helper function that handles the conversion of an any to a
+// nillable type.
+//
+// In Go, nillable types are:
+//
+// Pointers - *T
+// Slices - []T
+// Maps - map[T]U
+// Channels - chan T
+// Functions - func(...) ...
+// Interfaces - interface{} (Including custom interfaces)
+//
+// The Reference function should be used to convert all of these types in mock
+// method declaration, if not, you must handle the nil case manually.
+func Reference[T any](value any) T {
+	typed, _ := value.(T)
+	return typed
+}
+
+// Value is a helper function that handles the conversion of an any to a value
+// (non-nillable) type.
+//
+// In Go, non-nillable types are:
+//
+// Integers - int, uint, int64, uint64...
+// Floats - float32, float64
+// Booleans - bool
+// Strings - string
+// Arrays - [N]T
+// Structs - struct{} (struct values, not pointers)
+//
+// Using the Value function is not a must, but it helps to normalize your mock
+// method declarations.
+func Value[T any](value any) T {
+	return value.(T)
+}
+
 // Mockx is the main struct that manages mock method implementations and args
 // tracking.
 type Mockx struct {
