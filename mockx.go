@@ -94,8 +94,13 @@ func (mockxInstance *Mockx) Return(method string, values ...any) {
 	funcType := registeredFuncValue.Type()
 
 	returnValues := make([]reflect.Value, len(values))
-	for i, value := range values {
-		returnValues[i] = reflect.ValueOf(value)
+	for i := range funcType.NumOut() {
+		valueType := funcType.Out(i)
+		if values[i] == nil || (reflect.ValueOf(values[i]).Kind() == reflect.Ptr && reflect.ValueOf(values[i]).IsNil()) {
+			returnValues[i] = reflect.Zero(valueType)
+		} else {
+			returnValues[i] = reflect.ValueOf(values[i])
+		}
 	}
 
 	funcValue := reflect.MakeFunc(funcType, func(args []reflect.Value) []reflect.Value {
