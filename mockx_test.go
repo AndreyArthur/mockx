@@ -1,6 +1,7 @@
 package mockx_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -17,7 +18,42 @@ type CalculatorMock struct {
 
 func (calculator *CalculatorMock) Add(a int, b int) int {
 	values := calculator.Call("Add", a, b)
-	return values[0].(int)
+	return mockx.Value[int](values[0])
+}
+
+func TestReference(t *testing.T) {
+	{
+		var err error = errors.New("Error has occured.")
+		var untyped any = err
+
+		recovered := mockx.Reference[error](untyped)
+
+		if recovered.Error() != "Error has occured." {
+			t.Fatal("Unexpected error message.")
+		}
+	}
+
+	{
+		var err error = nil
+		var untyped any = err
+
+		recovered := mockx.Reference[error](untyped)
+
+		if recovered != nil {
+			t.Fatal("Expected recovered error to be nil.")
+		}
+	}
+}
+
+func TestValue(t *testing.T) {
+	var value int = 64
+	var untyped any = value
+
+	recovered := mockx.Value[int](untyped)
+
+	if recovered != 64 {
+		t.Fatal("Expected recovered int to be 64.")
+	}
 }
 
 func TestMockxInit(t *testing.T) {
@@ -67,7 +103,7 @@ func TestMockxArgs(t *testing.T) {
 	calculator.Add(1, 2)
 	args := calculator.Args("Add")
 
-	if args[0].(int) != 1 || args[1].(int) != 2 {
+	if mockx.Value[int](args[0]) != 1 || mockx.Value[int](args[1]) != 2 {
 		t.Fatal("Expected arguments to be saved.")
 	}
 }
@@ -88,7 +124,7 @@ func ExampleMockx_Call() {
 	greeter.Init((*Greeter)(nil))
 
 	values := greeter.Call("Greet", "Mockx")
-	result := values[0].(string)
+	result := mockx.Value[string](values[0])
 
 	fmt.Printf("result = %q\n", result)
 	// Output:
@@ -129,9 +165,29 @@ func ExampleMockx_Args() {
 
 	greeter.Greet("Mockx")
 	args := greeter.Args("Greet")
-	arg := args[0].(string)
+	arg := mockx.Value[string](args[0])
 
 	fmt.Printf("arg = %q\n", arg)
 	// Output:
 	// arg = "Mockx"
+}
+
+func ExampleReference() {
+	var untyped any = nil
+	recovered := mockx.Reference[error](untyped)
+
+	fmt.Printf("recovered = %v\n", recovered)
+
+	// Output:
+	// recovered = <nil>
+}
+
+func ExampleValue() {
+	var untyped any = 42
+	recovered := mockx.Value[int](untyped)
+
+	fmt.Printf("recovered = %v\n", recovered)
+
+	// Output:
+	// recovered = 42
 }

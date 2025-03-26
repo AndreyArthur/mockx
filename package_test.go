@@ -16,7 +16,7 @@ type GreeterMock struct {
 
 func (greeter *GreeterMock) Greet(name string) string {
 	values := greeter.Call("Greet", name)
-	return values[0].(string)
+	return mockx.Value[string](values[0])
 }
 
 func Example_mockx() {

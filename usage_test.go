@@ -1,6 +1,7 @@
 package mockx_test
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/AndreyArthur/mockx"
@@ -8,7 +9,7 @@ import (
 
 // Define a sorting interface.
 type Sorting interface {
-	IsSorted(slice []int) bool
+	IsSorted(slice []int) (bool, error)
 }
 
 // Implement a Searcher struct that depends on the Sorting interface.
@@ -48,7 +49,12 @@ func (searcher *Searcher) binary(slice []int, target int) int {
 }
 
 func (searcher *Searcher) Search(slice []int, target int) int {
-	if searcher.sorting.IsSorted(slice) {
+	sorted, err := searcher.sorting.IsSorted(slice)
+	if err != nil {
+		panic(err)
+	}
+
+	if sorted {
 		return searcher.binary(slice, target)
 	}
 	return searcher.linear(slice, target)
@@ -66,9 +72,9 @@ func NewSortingMock() *SortingMock {
 	return sorting
 }
 
-func (sorting *SortingMock) IsSorted(slice []int) bool {
+func (sorting *SortingMock) IsSorted(slice []int) (bool, error) {
 	values := sorting.Call("IsSorted", slice)
-	return values[0].(bool)
+	return mockx.Value[bool](values[0]), mockx.Reference[error](values[1])
 }
 
 // Use the mockx library in tests.
@@ -78,21 +84,25 @@ func Example_usage() {
 
 	slice := []int{3, 1, 2, 5, 4}
 
-	sorting.Return("IsSorted", false)
+	sorting.Return("IsSorted", false, nil)
 	index := searcher.Search(slice, 3)
 	fmt.Printf("index = %d\n", index)
 
-	sorting.Return("IsSorted", true)
+	sorting.Return("IsSorted", true, nil)
 	index = searcher.Search(slice, 3)
 	fmt.Printf("index = %d\n", index)
 
-	sorting.Impl("IsSorted", func(slice []int) bool {
+	sorting.Impl("IsSorted", func(slice []int) (bool, error) {
+		if slice == nil {
+			return false, errors.New("Cannot verify, a nil slice was given.")
+		}
+
 		for i := range len(slice) - 1 {
 			if slice[i] > slice[i+1] {
-				return false
+				return false, nil
 			}
 		}
-		return true
+		return true, nil
 	})
 	index = searcher.Search(slice, 4)
 	fmt.Printf("index = %d\n", index)
